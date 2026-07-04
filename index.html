@@ -1,0 +1,2165 @@
+<!DOCTYPE html>
+<html class="light" lang="id">
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" name="viewport" />
+    <title>BayarKita - Aplikasi Pembayaran</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <!-- QRCode.js via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js">
+    </script>
+    <script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-surface": "#0b1c30",
+                        "surface-container-low": "#eff4ff",
+                        "primary-container": "#008378",
+                        "secondary": "#565e74",
+                        "primary": "#00685f",
+                        "secondary-container": "#dae2fd",
+                        "on-secondary-fixed": "#131b2e",
+                        "surface-container-highest": "#d3e4fe",
+                        "on-surface-variant": "#3d4947",
+                        "primary-fixed-dim": "#6bd8cb",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#d3e4fe",
+                        "surface-tint": "#006a61",
+                        "on-primary-fixed": "#00201d",
+                        "tertiary-container": "#727577",
+                        "surface": "#f8f9ff",
+                        "tertiary": "#595c5e",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#005049",
+                        "inverse-on-surface": "#eaf1ff",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f8f9ff",
+                        "background": "#f8f9ff",
+                        "outline-variant": "#bcc9c6",
+                        "on-primary-container": "#f4fffc",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#bec6e0",
+                        "primary-fixed": "#89f5e7",
+                        "surface-container-high": "#dce9ff",
+                        "on-background": "#0b1c30",
+                        "secondary-fixed": "#dae2fd",
+                        "inverse-surface": "#213145",
+                        "surface-container": "#e5eeff",
+                        "on-tertiary-container": "#fbfdff",
+                        "on-tertiary-fixed-variant": "#444749",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c4c7c9",
+                        "outline": "#6d7a77",
+                        "on-secondary-container": "#5c647a",
+                        "on-tertiary-fixed": "#191c1e",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "surface-dim": "#cbdbf5",
+                        "on-secondary-fixed-variant": "#3f465c",
+                        "inverse-primary": "#6bd8cb",
+                        "tertiary-fixed": "#e0e3e5",
+                        "error-container": "#ffdad6"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        "2xl": "1rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        sm: "8px",
+                        gutter: "24px",
+                        xs: "4px",
+                        "container-max": "1280px",
+                        xl: "32px",
+                        "margin-mobile": "16px",
+                        xxl: "48px",
+                        lg: "24px",
+                        md: "16px",
+                        base: "4px"
+                    },
+                    fontFamily: {
+                        body: ["Inter", "sans-serif"],
+                        display: ["Inter", "sans-serif"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "body-sm": ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+                        display: ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "headline-lg-mobile": ["24px", { lineHeight: "1.3", fontWeight: "600" }],
+                        "headline-md": ["24px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "label-md": ["14px", { lineHeight: "1", letterSpacing: "0.01em", fontWeight: "500" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "headline-sm": ["20px", { lineHeight: "1.4", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1", fontWeight: "600" }],
+                        "headline-lg": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* ===== GLOBAL ===== */
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f8f9ff;
+            color: #0b1c30;
+            padding-bottom: 90px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            user-select: none;
+        }
+        .active-nav .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* ===== TRANSITIONS ===== */
+        .page-section {
+            display: none;
+            animation: fadeSlideUp 0.3s ease forwards;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeSlideUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== TOAST ===== */
+        #toast-container {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 9999;
+            width: 90%;
+            max-width: 400px;
+            pointer-events: none;
+        }
+        .toast {
+            background: #1e293b;
+            color: #fff;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            pointer-events: auto;
+            transform: translateY(-10px);
+            opacity: 0;
+            animation: toastIn 0.35s ease forwards;
+            border-left: 4px solid #6bd8cb;
+        }
+        .toast.success {
+            border-left-color: #22c55e;
+        }
+        .toast.error {
+            border-left-color: #ef4444;
+        }
+        .toast.warning {
+            border-left-color: #f59e0b;
+        }
+        .toast .toast-icon {
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+        @keyframes toastIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-16px) scale(0.96);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        @keyframes toastOut {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9998;
+            background: rgba(11, 28, 48, 0.55);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            animation: modalFadeIn 0.25s ease;
+        }
+        .modal-overlay.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 480px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px 32px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: modalSlideUp 0.3s ease;
+            box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.12);
+        }
+        @keyframes modalFadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+        @keyframes modalSlideUp {
+            0% {
+                transform: translateY(40px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-handle {
+            width: 48px;
+            height: 4px;
+            background: #d3d9e8;
+            border-radius: 4px;
+            margin: 0 auto 20px;
+        }
+
+        /* ===== BOTTOM NAV ===== */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 999;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(188, 201, 198, 0.4);
+            padding: 8px 0 12px;
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: #6d7a77;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 12px;
+            transition: 0.2s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            min-width: 56px;
+            position: relative;
+        }
+        .nav-item .material-symbols-outlined {
+            font-size: 26px;
+            transition: 0.2s;
+        }
+        .nav-item.active {
+            color: #00685f;
+        }
+        .nav-item.active .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1;
+        }
+        .nav-center {
+            position: relative;
+            top: -8px;
+        }
+        .nav-center-btn {
+            width: 60px;
+            height: 60px;
+            background: #00685f;
+            color: #fff;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 4px solid #f8f9ff;
+            box-shadow: 0 8px 24px rgba(0, 104, 95, 0.35);
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .nav-center-btn .material-symbols-outlined {
+            font-size: 32px;
+        }
+        .nav-center-btn:active {
+            transform: scale(0.92);
+        }
+        .nav-item:active {
+            transform: scale(0.94);
+        }
+        .nav-label {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        /* ===== SCROLLBAR ===== */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* ===== PAYMENT METHOD CARDS ===== */
+        .method-card {
+            border: 2px solid #e5eeff;
+            border-radius: 14px;
+            padding: 14px 16px;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+        }
+        .method-card.selected {
+            border-color: #00685f;
+            background: #f4fffc;
+            box-shadow: 0 0 0 3px rgba(0, 104, 95, 0.12);
+        }
+        .method-card:active {
+            transform: scale(0.97);
+        }
+
+        /* ===== QR CODE ===== */
+        #qrcode-container canvas,
+        #qrcode-container img {
+            border-radius: 12px;
+            background: #fff;
+            padding: 8px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* ===== SPP CHECKBOX ===== */
+        .spp-item {
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .spp-item:active {
+            transform: scale(0.98);
+        }
+        .spp-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #00685f;
+            cursor: pointer;
+        }
+
+        /* ===== PROVIDER GRID ===== */
+        .provider-card {
+            border: 2px solid transparent;
+            border-radius: 16px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.2s;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .provider-card.selected {
+            border-color: #00685f;
+            background: #f4fffc;
+            box-shadow: 0 0 0 3px rgba(0, 104, 95, 0.10);
+        }
+        .provider-card:active {
+            transform: scale(0.95);
+        }
+        .provider-card .logo {
+            font-size: 28px;
+            font-weight: 800;
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* ===== NOMINAL PILLS ===== */
+        .nominal-pill {
+            padding: 8px 16px;
+            border-radius: 999px;
+            border: 2px solid #e5eeff;
+            background: #fff;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #0b1c30;
+        }
+        .nominal-pill.selected {
+            border-color: #00685f;
+            background: #f4fffc;
+            color: #00685f;
+        }
+        .nominal-pill:active {
+            transform: scale(0.94);
+        }
+
+        /* ===== PRINT STYLES ===== */
+        @media print {
+            body * {
+                visibility: hidden !important;
+            }
+            #receipt-print-area,
+            #receipt-print-area * {
+                visibility: visible !important;
+            }
+            #receipt-print-area {
+                position: fixed !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                padding: 40px 24px !important;
+                background: #fff !important;
+                z-index: 99999 !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* ===== RESPONSIVE TWEAKS ===== */
+        @media (min-width: 640px) {
+            .modal-box {
+                border-radius: 28px;
+                margin: 20px;
+                max-height: 85vh;
+            }
+            .modal-overlay {
+                align-items: center;
+            }
+            #toast-container {
+                top: 100px;
+            }
+        }
+        @media (min-width: 768px) {
+            body {
+                padding: 0 32px 100px;
+            }
+            .bottom-nav {
+                max-width: 600px;
+                left: 50%;
+                transform: translateX(-50%);
+                border-radius: 28px 28px 0 0;
+                padding: 8px 16px 14px;
+            }
+            .page-section {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+            header {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+
+        /* loading shimmer */
+        .shimmer {
+            background: linear-gradient(90deg, #eef2f7 25%, #e5edf5 50%, #eef2f7 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.2s infinite;
+            border-radius: 8px;
+        }
+        @keyframes shimmer {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+
+        /* badge pulse */
+        .badge-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ====== TOAST CONTAINER ====== -->
+    <div id="toast-container"></div>
+
+    <!-- ====== HEADER ====== -->
+    <header class="sticky top-0 z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant px-4 h-16 flex items-center justify-between" style="background: rgba(248,249,255,0.80);">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-white font-extrabold text-sm shadow-sm">
+                BK
+            </div>
+            <div>
+                <p class="text-[10px] text-on-surface-variant leading-none mb-0.5">Selamat datang,</p>
+                <p class="font-bold text-on-surface leading-none text-sm">Alex Thompson</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-1">
+            <button class="p-2 rounded-full hover:bg-surface-container relative" id="notifBtn" aria-label="Notifikasi">
+                <span class="material-symbols-outlined text-on-surface-variant">notifications</span>
+                <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full badge-pulse"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- ====== MAIN ====== -->
+    <main class="px-4 pt-4 pb-4 max-w-[600px] mx-auto">
+
+        <!-- ===== DASHBOARD ===== -->
+        <section id="page-dashboard" class="page-section active space-y-5">
+            <!-- Greeting -->
+            <div>
+                <h1 class="text-headline-sm font-extrabold text-on-surface">Selamat Pagi! ☀️</h1>
+                <p class="text-body-sm text-on-surface-variant">Ada 2 tagihan jatuh tempo minggu ini.</p>
+            </div>
+
+            <!-- Wallet Card -->
+            <div class="bg-primary-container text-on-primary-container rounded-2xl p-5 shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-40 h-40 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl"></div>
+                <div class="relative z-10">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <p class="text-primary-fixed-dim text-[10px] font-bold uppercase tracking-wider mb-0.5">Saldo Wallet</p>
+                            <h2 class="text-2xl font-extrabold tracking-tight">Rp 12.450.000</h2>
+                        </div>
+                        <div class="bg-white/20 p-2 rounded-xl">
+                            <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div class="bg-white/10 rounded-xl p-3">
+                            <p class="text-[9px] text-primary-fixed-dim uppercase font-bold tracking-wider mb-0.5">Pemasukan</p>
+                            <p class="text-sm font-bold">+Rp 4.200k</p>
+                        </div>
+                        <div class="bg-white/10 rounded-xl p-3">
+                            <p class="text-[9px] text-primary-fixed-dim uppercase font-bold tracking-wider mb-0.5">Pengeluaran</p>
+                            <p class="text-sm font-bold">-Rp 1.150k</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-2">
+                        <button class="w-full bg-white text-primary py-3 rounded-xl font-bold text-sm shadow-sm active:scale-[0.97] transition-transform" id="dashboardTopUp">
+                            Top Up
+                        </button>
+                        <button class="w-full bg-primary/40 border border-white/20 text-white py-3 rounded-xl font-bold text-sm active:scale-[0.97] transition-transform" id="dashboardTransfer">
+                            Transfer
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Grid -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-on-surface text-sm">Layanan</h3>
+                    <button class="text-primary text-[10px] font-bold flex items-center gap-0.5" id="serviceSeeAll">
+                        Lihat Semua <span class="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                </div>
+                <div class="grid grid-cols-4 gap-3">
+                    <button class="service-btn flex flex-col items-center gap-1.5" data-service="pln">
+                        <div class="w-14 h-14 bg-surface-container rounded-2xl flex items-center justify-center text-primary active:bg-primary-container active:text-on-primary-container transition-colors">
+                            <span class="material-symbols-outlined text-2xl">bolt</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-on-surface-variant">PLN</span>
+                    </button>
+                    <button class="service-btn flex flex-col items-center gap-1.5" data-service="pdam">
+                        <div class="w-14 h-14 bg-surface-container rounded-2xl flex items-center justify-center text-primary active:bg-primary-container active:text-on-primary-container transition-colors">
+                            <span class="material-symbols-outlined text-2xl">water_drop</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-on-surface-variant">PDAM</span>
+                    </button>
+                    <button class="service-btn flex flex-col items-center gap-1.5" data-service="internet">
+                        <div class="w-14 h-14 bg-surface-container rounded-2xl flex items-center justify-center text-primary active:bg-primary-container active:text-on-primary-container transition-colors">
+                            <span class="material-symbols-outlined text-2xl">wifi</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-on-surface-variant">Internet</span>
+                    </button>
+                    <button class="service-btn flex flex-col items-center gap-1.5" data-service="seminar">
+                        <div class="w-14 h-14 bg-surface-container rounded-2xl flex items-center justify-center text-primary active:bg-primary-container active:text-on-primary-container transition-colors">
+                            <span class="material-symbols-outlined text-2xl">event</span>
+                        </div>
+                        <span class="text-[10px] font-bold text-on-surface-variant">Seminar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Promo Banner -->
+            <div class="relative w-full aspect-[2/1] rounded-2xl overflow-hidden shadow-md">
+                <div class="absolute inset-0 bg-gradient-to-r from-primary/90 via-primary/40 to-transparent z-10"></div>
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=400&fit=crop&crop=center');"></div>
+                <div class="relative z-20 h-full flex flex-col justify-center px-5 py-4">
+                    <span class="bg-secondary text-on-secondary text-[8px] uppercase font-black px-2.5 py-0.5 rounded-full w-fit mb-2">Promo Terbatas</span>
+                    <h2 class="text-white text-lg font-bold mb-0.5 leading-tight">Cashback 25%</h2>
+                    <p class="text-white/80 text-[10px] mb-3 max-w-[65%]">Bayar tagihan internet &amp; listrik hari ini dapatkan reward instan.</p>
+                    <button class="bg-white text-primary px-5 py-1.5 rounded-xl text-xs font-bold w-fit active:scale-95 transition-transform" id="promoClaim">Klaim Sekarang</button>
+                </div>
+            </div>
+
+            <!-- Upcoming Bill -->
+            <div class="bg-error-container/30 border border-error/10 rounded-2xl p-4">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="material-symbols-outlined text-error">event_upcoming</span>
+                    <h4 class="font-bold text-on-surface text-sm">Tagihan Mendesak</h4>
+                </div>
+                <div class="bg-surface-container-lowest rounded-xl p-3 flex justify-between items-center mb-3">
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant mb-0.5">PDAM Tirtanadi</p>
+                        <p class="font-extrabold text-lg">Rp 128.500</p>
+                    </div>
+                    <p class="text-[10px] font-bold text-error bg-error/5 px-3 py-1 rounded-full">Jatuh tempo 3 hari</p>
+                </div>
+                <button class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/20" id="urgentPay">
+                    Bayar Sekarang
+                </button>
+            </div>
+
+            <!-- Recent Activity (mini) -->
+            <div>
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-bold text-on-surface text-sm">Aktivitas Terbaru</h3>
+                    <button class="text-on-surface-variant" id="historyNavFromDash"><span class="material-symbols-outlined">more_horiz</span></button>
+                </div>
+                <div id="mini-history" class="space-y-2">
+                    <!-- diisi JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== BAYAR TAGIHAN ===== -->
+        <section id="page-bayar" class="page-section space-y-5">
+            <div>
+                <h2 class="text-headline-sm font-extrabold text-on-surface">Bayar Tagihan</h2>
+                <p class="text-body-sm text-on-surface-variant">Pilih layanan &amp; masukkan nomor pelanggan</p>
+            </div>
+
+            <!-- Kategori Pilihan -->
+            <div class="grid grid-cols-4 gap-2">
+                <button class="cat-btn py-2.5 px-1 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant active:bg-primary-container active:text-on-primary-container transition-colors" data-cat="pln">
+                    <span class="material-symbols-outlined text-lg block mx-auto mb-0.5">bolt</span> PLN
+                </button>
+                <button class="cat-btn py-2.5 px-1 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant active:bg-primary-container active:text-on-primary-container transition-colors" data-cat="pdam">
+                    <span class="material-symbols-outlined text-lg block mx-auto mb-0.5">water_drop</span> PDAM
+                </button>
+                <button class="cat-btn py-2.5 px-1 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant active:bg-primary-container active:text-on-primary-container transition-colors" data-cat="internet">
+                    <span class="material-symbols-outlined text-lg block mx-auto mb-0.5">wifi</span> Internet
+                </button>
+                <button class="cat-btn py-2.5 px-1 rounded-xl text-xs font-bold bg-surface-container text-on-surface-variant active:bg-primary-container active:text-on-primary-container transition-colors" data-cat="seminar">
+                    <span class="material-symbols-outlined text-lg block mx-auto mb-0.5">event</span> Seminar
+                </button>
+            </div>
+
+            <!-- Form -->
+            <div class="bg-surface-container-low rounded-2xl p-4 space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-on-surface-variant block mb-1" for="billNumber">Nomor Pelanggan / ID</label>
+                    <input type="text" id="billNumber" placeholder="Contoh: 123456789012" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" />
+                    <p id="billError" class="text-[10px] text-error mt-1 hidden">⚠️ Minimal 8 karakter angka</p>
+                </div>
+                <button id="cekTagihanBtn" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-sm active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">search</span> Cek Tagihan
+                </button>
+                <div id="billLoading" class="hidden flex items-center justify-center gap-3 py-4">
+                    <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-sm font-medium text-on-surface-variant">Memeriksa tagihan...</span>
+                </div>
+            </div>
+
+            <!-- Hasil Tagihan -->
+            <div id="billResult" class="hidden bg-white rounded-2xl p-4 shadow-md border border-outline-variant/40 space-y-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant font-medium">Nama Pelanggan</p>
+                        <p id="billName" class="font-bold text-on-surface">-</p>
+                    </div>
+                    <span id="billStatus" class="text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Belum Lunas</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant font-medium">Alamat / Periode</p>
+                        <p id="billAddress" class="font-semibold">-</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant font-medium">Jatuh Tempo</p>
+                        <p id="billDue" class="font-semibold">-</p>
+                    </div>
+                </div>
+                <div class="border-t border-outline-variant/30 pt-3">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Tagihan Pokok</span>
+                        <span id="billAmount" class="font-bold">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-on-surface-variant">Denda</span>
+                        <span id="billFine" class="font-bold text-error">Rp 0</span>
+                    </div>
+                    <div class="flex justify-between text-base font-extrabold border-t border-outline-variant/30 pt-2 mt-1">
+                        <span>Total</span>
+                        <span id="billTotal" class="text-primary">Rp 0</span>
+                    </div>
+                </div>
+
+                <!-- Metode Pembayaran -->
+                <div class="space-y-3">
+                    <p class="text-xs font-bold text-on-surface-variant">Pilih Metode Pembayaran</p>
+                    <div class="space-y-2" id="paymentMethods">
+                        <div class="method-card selected" data-method="va">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary">account_balance</span>
+                                <div>
+                                    <p class="font-bold text-sm">Virtual Account</p>
+                                    <p class="text-[10px] text-on-surface-variant">Transfer via BCA, BNI, Mandiri</p>
+                                </div>
+                                <span class="ml-auto text-primary text-xs font-bold">✓</span>
+                            </div>
+                        </div>
+                        <div class="method-card" data-method="qris">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary">qr_code_scanner</span>
+                                <div>
+                                    <p class="font-bold text-sm">QRIS</p>
+                                    <p class="text-[10px] text-on-surface-variant">Scan kode QR dengan aplikasi payment</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="method-card" data-method="teller">
+                            <div class="flex items-center gap-3">
+                                <span class="material-symbols-outlined text-primary">storefront</span>
+                                <div>
+                                    <p class="font-bold text-sm">Bayar di Teller / Kasir</p>
+                                    <p class="text-[10px] text-on-surface-variant">Datang ke kantor cabang terdekat</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="payNowBtn" class="w-full py-3.5 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">payments</span> Bayar Sekarang
+                </button>
+            </div>
+        </section>
+
+        <!-- ===== SPP / BIAYA KULIAH ===== -->
+        <section id="page-spp" class="page-section space-y-5">
+            <div>
+                <h2 class="text-headline-sm font-extrabold text-on-surface">Biaya Kuliah / SPP</h2>
+                <p class="text-body-sm text-on-surface-variant">Masukkan NIM untuk melihat tagihan semester</p>
+            </div>
+
+            <div class="bg-surface-container-low rounded-2xl p-4 space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-on-surface-variant block mb-1" for="nimInput">Nomor Induk Mahasiswa (NIM)</label>
+                    <input type="text" id="nimInput" placeholder="Contoh: 202310001" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" />
+                    <p id="nimError" class="text-[10px] text-error mt-1 hidden">⚠️ NIM tidak valid atau tidak terdaftar</p>
+                </div>
+                <button id="cekNimBtn" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-sm active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">receipt_long</span> Lihat Tagihan Semester
+                </button>
+                <div id="nimLoading" class="hidden flex items-center justify-center gap-3 py-4">
+                    <div class="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                    <span class="text-sm font-medium text-on-surface-variant">Memuat data semester...</span>
+                </div>
+            </div>
+
+            <!-- Hasil SPP -->
+            <div id="sppResult" class="hidden bg-white rounded-2xl p-4 shadow-md border border-outline-variant/40 space-y-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant font-medium">NIM</p>
+                        <p id="sppNimDisplay" class="font-bold text-on-surface">-</p>
+                    </div>
+                    <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-blue-50 text-blue-700">Semester Ganjil 2025/2026</span>
+                </div>
+
+                <div id="sppList" class="space-y-2 max-h-64 overflow-y-auto hide-scrollbar">
+                    <!-- diisi JS -->
+                </div>
+
+                <div class="border-t border-outline-variant/30 pt-3 flex justify-between items-center">
+                    <span class="text-sm font-bold text-on-surface-variant">Total Dipilih</span>
+                    <span id="sppTotal" class="text-xl font-extrabold text-primary">Rp 0</span>
+                </div>
+
+                <!-- Kode Tagihan -->
+                <div class="bg-surface-container-low rounded-xl p-3">
+                    <p class="text-[10px] text-on-surface-variant font-medium mb-0.5">Kode Tagihan (detail)</p>
+                    <p id="sppKodeTagihan" class="text-xs font-mono font-bold text-on-surface break-all">-</p>
+                </div>
+
+                <button id="sppBayarBtn" class="w-full py-3.5 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-md shadow-primary/20 active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">payments</span> Bayar Cicilan Terpilih
+                </button>
+            </div>
+        </section>
+
+        <!-- ===== PULSA & PAKET ===== -->
+        <section id="page-pulsa" class="page-section space-y-5">
+            <div>
+                <h2 class="text-headline-sm font-extrabold text-on-surface">Isi Pulsa &amp; Paket Data</h2>
+                <p class="text-body-sm text-on-surface-variant">Pilih provider &amp; nominal pulsa atau paket data</p>
+            </div>
+
+            <!-- Provider -->
+            <div>
+                <p class="text-xs font-bold text-on-surface-variant mb-2">Pilih Provider</p>
+                <div class="grid grid-cols-3 gap-2" id="providerGrid">
+                    <div class="provider-card selected" data-provider="telkomsel">
+                        <span class="logo text-red-600">📱</span>
+                        <p class="text-[10px] font-bold">Telkomsel</p>
+                    </div>
+                    <div class="provider-card" data-provider="xl">
+                        <span class="logo text-blue-600">📱</span>
+                        <p class="text-[10px] font-bold">XL</p>
+                    </div>
+                    <div class="provider-card" data-provider="indosat">
+                        <span class="logo text-yellow-600">📱</span>
+                        <p class="text-[10px] font-bold">Indosat</p>
+                    </div>
+                    <div class="provider-card" data-provider="tri">
+                        <span class="logo text-purple-600">📱</span>
+                        <p class="text-[10px] font-bold">Tri (3)</p>
+                    </div>
+                    <div class="provider-card" data-provider="smartfren">
+                        <span class="logo text-green-600">📱</span>
+                        <p class="text-[10px] font-bold">Smartfren</p>
+                    </div>
+                    <div class="provider-card" data-provider="axis">
+                        <span class="logo text-orange-600">📱</span>
+                        <p class="text-[10px] font-bold">Axis</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="bg-surface-container-low rounded-2xl p-4 space-y-4">
+                <div>
+                    <label class="text-xs font-bold text-on-surface-variant block mb-1" for="hpInput">Nomor HP</label>
+                    <input type="text" id="hpInput" placeholder="081234567890" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" />
+                    <p id="hpError" class="text-[10px] text-error mt-1 hidden">⚠️ Nomor harus 10-13 digit diawali 08</p>
+                    <p id="hpProviderDetect" class="text-[10px] text-primary mt-1 hidden">✅ Terdeteksi: <span id="hpProviderName">-</span></p>
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-on-surface-variant mb-2">Nominal Pulsa</p>
+                    <div class="flex flex-wrap gap-2" id="nominalGrid">
+                        <button class="nominal-pill selected" data-nominal="10000">Rp10k</button>
+                        <button class="nominal-pill" data-nominal="25000">Rp25k</button>
+                        <button class="nominal-pill" data-nominal="50000">Rp50k</button>
+                        <button class="nominal-pill" data-nominal="100000">Rp100k</button>
+                        <button class="nominal-pill" data-nominal="200000">Rp200k</button>
+                        <button class="nominal-pill" data-nominal="custom">Custom</button>
+                    </div>
+                    <div id="customNominalWrap" class="hidden mt-2">
+                        <input type="number" id="customNominalInput" placeholder="Masukkan nominal (Rp)" class="w-full px-4 py-3 rounded-xl border border-outline-variant bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition" />
+                    </div>
+                </div>
+
+                <div>
+                    <p class="text-xs font-bold text-on-surface-variant mb-2">Paket Data (opsional)</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="nominal-pill" data-paket="1gb">1GB Rp15k</button>
+                        <button class="nominal-pill" data-paket="3gb">3GB Rp35k</button>
+                        <button class="nominal-pill" data-paket="5gb">5GB Rp55k</button>
+                        <button class="nominal-pill" data-paket="10gb">10GB Rp95k</button>
+                    </div>
+                </div>
+
+                <button id="pulsaBayarBtn" class="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-sm active:scale-[0.97] transition-transform flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-lg">sim_card</span> Lanjutkan Pembayaran
+                </button>
+            </div>
+        </section>
+
+        <!-- ===== RIWAYAT ===== -->
+        <section id="page-history" class="page-section space-y-5">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h2 class="text-headline-sm font-extrabold text-on-surface">Riwayat Transaksi</h2>
+                    <p class="text-body-sm text-on-surface-variant">Semua transaksi tersimpan di perangkat Anda</p>
+                </div>
+                <button id="clearHistoryBtn" class="text-error text-[10px] font-bold bg-error/5 px-3 py-1.5 rounded-full active:scale-95 transition">Hapus Semua</button>
+            </div>
+
+            <!-- Filter -->
+            <div class="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-primary text-on-primary active:scale-95 transition" data-filter="all">Semua</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="pln">PLN</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="pdam">PDAM</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="internet">Internet</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="seminar">Seminar</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="spp">SPP</button>
+                <button class="filter-btn px-4 py-1.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant active:scale-95 transition" data-filter="pulsa">Pulsa</button>
+            </div>
+
+            <!-- Tabel -->
+            <div class="bg-white rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden">
+                <div id="historyList" class="divide-y divide-outline-variant/20 max-h-[420px] overflow-y-auto hide-scrollbar">
+                    <!-- diisi JS -->
+                </div>
+                <div id="historyEmpty" class="p-8 text-center text-on-surface-variant text-sm">
+                    <span class="material-symbols-outlined text-4xl block mx-auto mb-2 text-outline">history</span>
+                    Belum ada transaksi.
+                </div>
+            </div>
+
+            <!-- Statistik sederhana -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                    <p class="text-[10px] text-on-surface-variant font-medium">Total Transaksi</p>
+                    <p id="statTotal" class="font-extrabold text-lg">0</p>
+                </div>
+                <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                    <p class="text-[10px] text-on-surface-variant font-medium">Total Pengeluaran</p>
+                    <p id="statTotalAmount" class="font-extrabold text-lg text-primary">Rp 0</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ====== BOTTOM NAV ====== -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" data-page="dashboard" aria-label="Beranda">
+            <span class="material-symbols-outlined">home</span>
+            <span class="nav-label">Beranda</span>
+        </button>
+        <button class="nav-item" data-page="bayar" aria-label="Bayar Tagihan">
+            <span class="material-symbols-outlined">receipt_long</span>
+            <span class="nav-label">Bayar</span>
+        </button>
+        <div class="nav-center">
+            <button class="nav-center-btn" id="navCenterBtn" aria-label="Pulsa">
+                <span class="material-symbols-outlined">qr_code_scanner</span>
+            </button>
+            <span class="nav-label block text-center text-[9px] font-bold text-on-surface-variant mt-0.5">Pulsa</span>
+        </div>
+        <button class="nav-item" data-page="spp" aria-label="SPP">
+            <span class="material-symbols-outlined">school</span>
+            <span class="nav-label">SPP</span>
+        </button>
+        <button class="nav-item" data-page="history" aria-label="Riwayat">
+            <span class="material-symbols-outlined">history</span>
+            <span class="nav-label">Riwayat</span>
+        </button>
+    </nav>
+
+    <!-- ====== MODAL ====== -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-box">
+            <div class="modal-handle"></div>
+            <div id="modalContent">
+                <!-- konten dinamis -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ====== JS ====== -->
+    <script>
+        // ============================================================
+        //  DATA DUMMY
+        // ============================================================
+        const BILL_DATA = {
+            pln: {
+                "123456789012": {
+                    name: "Budi Santoso",
+                    address: "Jl. Merdeka No. 123, Jakarta",
+                    period: "Jan-Feb 2025",
+                    amount: 245000,
+                    fine: 0,
+                    dueDate: "2025-02-15"
+                },
+                "987654321098": {
+                    name: "Siti Rahayu",
+                    address: "Jl. Sudirman No. 45, Bandung",
+                    period: "Jan-Feb 2025",
+                    amount: 312500,
+                    fine: 15000,
+                    dueDate: "2025-02-10"
+                },
+                "456789123456": {
+                    name: "Agus Wijaya",
+                    address: "Jl. Gatot Subroto No. 78, Surabaya",
+                    period: "Feb-Mar 2025",
+                    amount: 189000,
+                    fine: 0,
+                    dueDate: "2025-03-05"
+                },
+                "111222333444": {
+                    name: "Dewi Lestari",
+                    address: "Jl. Ahmad Yani No. 56, Medan",
+                    period: "Feb-Mar 2025",
+                    amount: 275000,
+                    fine: 0,
+                    dueDate: "2025-03-12"
+                },
+                "555666777888": {
+                    name: "Rudi Hartono",
+                    address: "Jl. Pahlawan No. 9, Yogyakarta",
+                    period: "Jan-Feb 2025",
+                    amount: 420000,
+                    fine: 25000,
+                    dueDate: "2025-02-28"
+                }
+            },
+            pdam: {
+                "321654987012": {
+                    name: "Tirtanadi",
+                    address: "Jl. Gatot Subroto No. 12, Medan",
+                    period: "Jan-Feb 2025",
+                    amount: 128500,
+                    fine: 0,
+                    dueDate: "2025-02-20"
+                },
+                "654987321456": {
+                    name: "PAM Jaya",
+                    address: "Jl. Merdeka No. 7, Jakarta",
+                    period: "Feb-Mar 2025",
+                    amount: 95000,
+                    fine: 5000,
+                    dueDate: "2025-03-01"
+                },
+                "789123456789": {
+                    name: "PDAM Tirtawening",
+                    address: "Jl. Asia Afrika No. 23, Bandung",
+                    period: "Jan-Feb 2025",
+                    amount: 210000,
+                    fine: 0,
+                    dueDate: "2025-02-25"
+                }
+            },
+            internet: {
+                "111222333555": {
+                    name: "IndiHome",
+                    address: "Jl. Sudirman No. 34, Jakarta",
+                    period: "Feb 2025",
+                    amount: 350000,
+                    fine: 0,
+                    dueDate: "2025-03-10"
+                },
+                "444555666777": {
+                    name: "BizNet",
+                    address: "Jl. Gatot Subroto No. 89, Surabaya",
+                    period: "Feb 2025",
+                    amount: 275000,
+                    fine: 10000,
+                    dueDate: "2025-03-05"
+                },
+                "888999000111": {
+                    name: "FirstMedia",
+                    address: "Jl. Pahlawan No. 14, Bandung",
+                    period: "Feb 2025",
+                    amount: 425000,
+                    fine: 0,
+                    dueDate: "2025-03-15"
+                }
+            },
+            seminar: {
+                "SEM-2025-001": {
+                    name: "Tech Innovation Summit",
+                    address: "Jakarta Convention Center",
+                    period: "15 Mar 2025",
+                    amount: 750000,
+                    fine: 0,
+                    dueDate: "2025-03-10"
+                },
+                "SEM-2025-002": {
+                    name: "AI & Data Science Workshop",
+                    address: "Online (Zoom)",
+                    period: "22 Mar 2025",
+                    amount: 450000,
+                    fine: 0,
+                    dueDate: "2025-03-20"
+                },
+                "SEM-2025-003": {
+                    name: "Digital Marketing Bootcamp",
+                    address: "Hotel Santika, Bandung",
+                    period: "5-7 Apr 2025",
+                    amount: 1200000,
+                    fine: 50000,
+                    dueDate: "2025-04-01"
+                }
+            },
+            spp: {
+                "202310001": [
+                    { id: 1, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-1", amount: 2500000, status: "unpaid" },
+                    { id: 2, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-2", amount: 2500000, status: "unpaid" },
+                    { id: 3, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-3", amount: 2500000, status: "unpaid" },
+                    { id: 4, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-4", amount: 2500000, status: "unpaid" },
+                    { id: 5, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-5", amount: 2500000, status: "unpaid" },
+                    { id: 6, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-6", amount: 2500000, status: "unpaid" },
+                    { id: 7, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-7", amount: 2500000, status: "unpaid" },
+                    { id: 8, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-8", amount: 2500000, status: "unpaid" }
+                ],
+                "202310002": [
+                    { id: 1, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-1", amount: 2750000, status: "paid" },
+                    { id: 2, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-2", amount: 2750000, status: "paid" },
+                    { id: 3, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-3", amount: 2750000, status: "unpaid" },
+                    { id: 4, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-4", amount: 2750000, status: "unpaid" },
+                    { id: 5, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-5", amount: 2750000, status: "unpaid" },
+                    { id: 6, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-6", amount: 2750000, status: "unpaid" },
+                    { id: 7, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-7", amount: 2750000, status: "unpaid" },
+                    { id: 8, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-8", amount: 2750000, status: "unpaid" }
+                ],
+                "202310003": [
+                    { id: 1, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-1", amount: 2200000, status: "paid" },
+                    { id: 2, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-2", amount: 2200000, status: "paid" },
+                    { id: 3, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-3", amount: 2200000, status: "paid" },
+                    { id: 4, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-4", amount: 2200000, status: "unpaid" },
+                    { id: 5, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-5", amount: 2200000, status: "unpaid" },
+                    { id: 6, desc: "SPP Semester Ganjil 2025/2026 - Cicilan ke-6", amount: 2200000, status: "unpaid" }
+                ]
+            }
+        };
+
+        // Provider mapping for HP
+        const PROVIDER_MAP = {
+            "081": "Telkomsel",
+            "082": "Telkomsel",
+            "085": "Telkomsel",
+            "083": "XL Axiata",
+            "087": "XL Axiata",
+            "088": "XL Axiata",
+            "089": "Tri (3)",
+            "084": "Indosat Ooredoo",
+            "086": "Indosat Ooredoo",
+            "090": "Smartfren",
+            "091": "Smartfren",
+            "092": "Smartfren",
+            "093": "Axis",
+            "094": "Axis",
+            "095": "Axis"
+        };
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let currentPage = 'dashboard';
+        let currentBillCategory = 'pln';
+        let currentBillData = null;
+        let selectedMethod = 'va';
+        let selectedProvider = 'telkomsel';
+        let selectedNominal = '10000';
+        let selectedPaket = null;
+        let sppData = null;
+        let sppChecked = {};
+        let currentFilter = 'all';
+        let selectedNim = null;
+
+        // ============================================================
+        //  LOCALSTORAGE
+        // ============================================================
+        function getTransactions() {
+            try {
+                return JSON.parse(localStorage.getItem('bayarkita_transactions')) || [];
+            } catch { return []; }
+        }
+
+        function saveTransactions(txs) {
+            localStorage.setItem('bayarkita_transactions', JSON.stringify(txs));
+        }
+
+        function addTransaction(tx) {
+            const txs = getTransactions();
+            tx.id = Date.now() + '-' + Math.random().toString(36).slice(2, 6);
+            tx.timestamp = new Date().toISOString();
+            txs.unshift(tx);
+            saveTransactions(txs);
+            return tx;
+        }
+
+        function clearTransactions() {
+            localStorage.removeItem('bayarkita_transactions');
+        }
+
+        // ============================================================
+        //  TOAST
+        // ============================================================
+        function showToast(message, type = 'info', duration = 3500) {
+            const container = document.getElementById('toast-container');
+            const icons = {
+                success: 'check_circle',
+                error: 'error',
+                warning: 'warning',
+                info: 'info'
+            };
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+            <span class="material-symbols-outlined toast-icon">${icons[type] || 'info'}</span>
+            <span>${message}</span>
+          `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'toastOut 0.3s ease forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // ============================================================
+        //  MODAL
+        // ============================================================
+        function openModal(html) {
+            document.getElementById('modalContent').innerHTML = html;
+            document.getElementById('modalOverlay').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+
+        // ============================================================
+        //  NAVIGATION
+        // ============================================================
+        function navigateTo(page) {
+            currentPage = page;
+            document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('page-' + page);
+            if (target) target.classList.add('active');
+
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.classList.toggle('active', el.dataset.page === page);
+            });
+
+            if (page === 'history') renderHistory();
+            if (page === 'dashboard') renderMiniHistory();
+
+            // scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        document.querySelectorAll('.nav-item').forEach(el => {
+            el.addEventListener('click', () => {
+                navigateTo(el.dataset.page);
+            });
+        });
+
+        document.getElementById('navCenterBtn').addEventListener('click', () => {
+            navigateTo('pulsa');
+        });
+
+        document.getElementById('historyNavFromDash').addEventListener('click', () => {
+            navigateTo('history');
+        });
+
+        document.getElementById('urgentPay').addEventListener('click', () => {
+            navigateTo('bayar');
+            document.getElementById('billNumber').value = '321654987012';
+            cekTagihan();
+        });
+
+        document.getElementById('serviceSeeAll').addEventListener('click', () => {
+            navigateTo('bayar');
+        });
+
+        document.querySelectorAll('.service-btn').forEach(el => {
+            el.addEventListener('click', () => {
+                const svc = el.dataset.service;
+                navigateTo('bayar');
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.classList.toggle('bg-primary-container', b.dataset.cat === svc);
+                    b.classList.toggle('text-on-primary-container', b.dataset.cat === svc);
+                    b.classList.toggle('bg-surface-container', b.dataset.cat !== svc);
+                    b.classList.toggle('text-on-surface-variant', b.dataset.cat !== svc);
+                });
+                currentBillCategory = svc;
+                document.getElementById('billNumber').value = '';
+                document.getElementById('billResult').classList.add('hidden');
+                document.getElementById('billError').classList.add('hidden');
+            });
+        });
+
+        document.getElementById('promoClaim').addEventListener('click', () => {
+            showToast('🎉 Promo berhasil diklaim! Cashback akan masuk dalam 1x24 jam.', 'success');
+        });
+
+        document.getElementById('dashboardTopUp').addEventListener('click', () => {
+            navigateTo('pulsa');
+        });
+
+        document.getElementById('dashboardTransfer').addEventListener('click', () => {
+            showToast('Fitur transfer akan segera hadir!', 'info');
+        });
+
+        // ============================================================
+        //  BAYAR TAGIHAN - Kategori
+        // ============================================================
+        document.querySelectorAll('.cat-btn').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.classList.toggle('bg-primary-container', b === el);
+                    b.classList.toggle('text-on-primary-container', b === el);
+                    b.classList.toggle('bg-surface-container', b !== el);
+                    b.classList.toggle('text-on-surface-variant', b !== el);
+                });
+                currentBillCategory = el.dataset.cat;
+                document.getElementById('billNumber').value = '';
+                document.getElementById('billResult').classList.add('hidden');
+                document.getElementById('billError').classList.add('hidden');
+            });
+        });
+
+        // ============================================================
+        //  BAYAR TAGIHAN - Cek Tagihan
+        // ============================================================
+        document.getElementById('cekTagihanBtn').addEventListener('click', cekTagihan);
+        document.getElementById('billNumber').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') cekTagihan();
+        });
+
+        function cekTagihan() {
+            const input = document.getElementById('billNumber').value.trim();
+            const errorEl = document.getElementById('billError');
+            const loadingEl = document.getElementById('billLoading');
+            const resultEl = document.getElementById('billResult');
+
+            // validasi
+            if (input.length < 8 || !/^\d+$/.test(input) && currentBillCategory !== 'seminar') {
+                errorEl.classList.remove('hidden');
+                resultEl.classList.add('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            // loading
+            loadingEl.classList.remove('hidden');
+            resultEl.classList.add('hidden');
+
+            setTimeout(() => {
+                loadingEl.classList.add('hidden');
+
+                const data = BILL_DATA[currentBillCategory];
+                let bill = data ? data[input] : null;
+
+                if (!bill) {
+                    showToast('Nomor pelanggan tidak ditemukan. Silakan coba lagi.', 'error');
+                    return;
+                }
+
+                currentBillData = { ...bill, category: currentBillCategory, customerId: input };
+                renderBillResult(bill, input);
+                resultEl.classList.remove('hidden');
+            }, 900);
+        }
+
+        function renderBillResult(bill, customerId) {
+            document.getElementById('billName').textContent = bill.name;
+            document.getElementById('billAddress').textContent = bill.address + ' • ' + bill.period;
+            document.getElementById('billDue').textContent = bill.dueDate;
+            document.getElementById('billAmount').textContent = 'Rp ' + formatRupiah(bill.amount);
+            document.getElementById('billFine').textContent = 'Rp ' + formatRupiah(bill.fine || 0);
+            const total = bill.amount + (bill.fine || 0);
+            document.getElementById('billTotal').textContent = 'Rp ' + formatRupiah(total);
+            document.getElementById('billStatus').textContent = (bill.fine > 0) ? 'Denda' : 'Belum Lunas';
+            document.getElementById('billStatus').className =
+                `text-[10px] font-bold px-3 py-1 rounded-full ${bill.fine > 0 ? 'bg-error/10 text-error' : 'bg-emerald-100 text-emerald-700'}`;
+        }
+
+        // ============================================================
+        //  BAYAR TAGIHAN - Metode Pembayaran
+        // ============================================================
+        document.querySelectorAll('.method-card').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedMethod = el.dataset.method;
+            });
+        });
+
+        // ============================================================
+        //  BAYAR TAGIHAN - Proses Bayar
+        // ============================================================
+        document.getElementById('payNowBtn').addEventListener('click', prosesBayarTagihan);
+
+        function prosesBayarTagihan() {
+            if (!currentBillData) {
+                showToast('Silakan cek tagihan terlebih dahulu.', 'warning');
+                return;
+            }
+
+            const total = currentBillData.amount + (currentBillData.fine || 0);
+            const methodLabels = {
+                va: 'Virtual Account',
+                qris: 'QRIS',
+                teller: 'Teller / Kasir'
+            };
+
+            // Loading
+            const btn = document.getElementById('payNowBtn');
+            const orig = btn.innerHTML;
+            btn.innerHTML =
+                '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Memproses...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+
+                // Generate VA / QR / Teller
+                let paymentDetail = '';
+                let vaNumber = '';
+                let qrData = '';
+
+                if (selectedMethod === 'va') {
+                    vaNumber = '8840' + String(Math.floor(100000000000 + Math.random() * 900000000000)).slice(0, 12);
+                    paymentDetail = `
+                <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                  <p class="text-[10px] text-on-surface-variant font-medium">Nomor Virtual Account</p>
+                  <p class="text-xl font-mono font-extrabold text-primary tracking-wider">${vaNumber}</p>
+                  <p class="text-[10px] text-on-surface-variant mt-1">Transfer ke BCA / BNI / Mandiri</p>
+                </div>
+              `;
+                } else if (selectedMethod === 'qris') {
+                    qrData = 'QRIS-BAYARKITA-' + Date.now().toString(36).toUpperCase();
+                    paymentDetail = `
+                <div class="text-center space-y-3">
+                  <p class="text-[10px] text-on-surface-variant font-medium">Scan QR Code dengan aplikasi payment</p>
+                  <div id="qrcode-container" class="flex justify-center"></div>
+                  <p class="text-[10px] text-on-surface-variant">Kode berlaku 5 menit</p>
+                  <div class="bg-error/5 text-error text-[10px] font-bold px-3 py-1 rounded-full inline-block">⏱️ 5:00</div>
+                </div>
+              `;
+                } else {
+                    paymentDetail = `
+                <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                  <p class="text-[10px] text-on-surface-variant font-medium">Kode Pembayaran</p>
+                  <p class="text-xl font-mono font-extrabold text-primary tracking-wider">BK-${String(Math.floor(100000 + Math.random() * 900000))}</p>
+                  <p class="text-[10px] text-on-surface-variant mt-2">Datang ke kantor cabang terdekat:</p>
+                  <p class="text-xs font-medium">Jl. Merdeka No. 123, Jakarta</p>
+                  <p class="text-xs font-medium">Jl. Sudirman No. 45, Bandung</p>
+                </div>
+              `;
+                }
+
+                // Simpan transaksi
+                const tx = {
+                    type: 'bill',
+                    category: currentBillData.category,
+                    customerId: currentBillData.customerId,
+                    name: currentBillData.name,
+                    amount: total,
+                    method: selectedMethod,
+                    methodLabel: methodLabels[selectedMethod],
+                    vaNumber: vaNumber || '-',
+                    status: 'success',
+                    date: new Date().toLocaleString('id-ID'),
+                    detail: paymentDetail
+                };
+                addTransaction(tx);
+
+                // Tampilkan struk
+                showReceiptModal(tx, paymentDetail, qrData, 'tagihan');
+
+                // Reset
+                document.getElementById('billResult').classList.add('hidden');
+                document.getElementById('billNumber').value = '';
+                currentBillData = null;
+
+                showToast('✅ Pembayaran berhasil!', 'success');
+            }, 1800);
+        }
+
+        // ============================================================
+        //  SPP / BIAYA KULIAH
+        // ============================================================
+        document.getElementById('cekNimBtn').addEventListener('click', cekNim);
+        document.getElementById('nimInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') cekNim();
+        });
+
+        function cekNim() {
+            const nim = document.getElementById('nimInput').value.trim();
+            const errorEl = document.getElementById('nimError');
+            const loadingEl = document.getElementById('nimLoading');
+            const resultEl = document.getElementById('sppResult');
+
+            if (nim.length < 6 || !/^\d+$/.test(nim)) {
+                errorEl.textContent = '⚠️ NIM harus berupa angka minimal 6 digit.';
+                errorEl.classList.remove('hidden');
+                resultEl.classList.add('hidden');
+                return;
+            }
+
+            errorEl.classList.add('hidden');
+            loadingEl.classList.remove('hidden');
+            resultEl.classList.add('hidden');
+
+            setTimeout(() => {
+                loadingEl.classList.add('hidden');
+
+                const data = BILL_DATA.spp[nim];
+                if (!data) {
+                    errorEl.textContent = '⚠️ NIM tidak terdaftar. Silakan coba lagi.';
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+
+                selectedNim = nim;
+                sppData = data;
+                sppChecked = {};
+                data.forEach((item, idx) => {
+                    if (item.status === 'unpaid') sppChecked[idx] = true;
+                    else sppChecked[idx] = false;
+                });
+
+                renderSppResult(data, nim);
+                resultEl.classList.remove('hidden');
+                showToast('📋 Data semester ditemukan!', 'success');
+            }, 1000);
+        }
+
+        function renderSppResult(data, nim) {
+            document.getElementById('sppNimDisplay').textContent = nim;
+
+            const list = document.getElementById('sppList');
+            list.innerHTML = '';
+            let total = 0;
+
+            data.forEach((item, idx) => {
+                const isChecked = sppChecked[idx] || false;
+                const isPaid = item.status === 'paid';
+                if (isChecked && !isPaid) total += item.amount;
+
+                const div = document.createElement('div');
+                div.className =
+                    `spp-item flex items-center gap-3 p-3 rounded-xl ${isPaid ? 'bg-surface-container-low opacity-60' : 'bg-white border border-outline-variant/30'}`;
+                div.innerHTML = `
+              <input type="checkbox" ${isChecked && !isPaid ? 'checked' : ''} ${isPaid ? 'disabled' : ''} data-idx="${idx}" class="spp-checkbox" />
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold ${isPaid ? 'text-on-surface-variant line-through' : 'text-on-surface'}">${item.desc}</p>
+                <p class="text-[10px] text-on-surface-variant">Rp ${formatRupiah(item.amount)}</p>
+              </div>
+              <span class="text-[8px] font-bold px-2 py-0.5 rounded-full ${isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${isPaid ? 'Lunas' : 'Belum'}</span>
+            `;
+                list.appendChild(div);
+
+                const cb = div.querySelector('.spp-checkbox');
+                if (cb && !isPaid) {
+                    cb.addEventListener('change', (e) => {
+                        const idx2 = parseInt(e.target.dataset.idx);
+                        sppChecked[idx2] = e.target.checked;
+                        updateSppTotal();
+                    });
+                }
+            });
+
+            document.getElementById('sppTotal').textContent = 'Rp ' + formatRupiah(total);
+            document.getElementById('sppKodeTagihan').textContent =
+                `${nim} | SPP Semester Ganjil 2025/2026 | ${data.filter(d => d.status === 'unpaid').length} cicilan belum lunas`;
+        }
+
+        function updateSppTotal() {
+            if (!sppData) return;
+            let total = 0;
+            sppData.forEach((item, idx) => {
+                if (sppChecked[idx] && item.status === 'unpaid') total += item.amount;
+            });
+            document.getElementById('sppTotal').textContent = 'Rp ' + formatRupiah(total);
+        }
+
+        // ============================================================
+        //  SPP - BAYAR
+        // ============================================================
+        document.getElementById('sppBayarBtn').addEventListener('click', prosesBayarSpp);
+
+        function prosesBayarSpp() {
+            if (!sppData) {
+                showToast('Silakan cek NIM terlebih dahulu.', 'warning');
+                return;
+            }
+
+            const selected = [];
+            let total = 0;
+            sppData.forEach((item, idx) => {
+                if (sppChecked[idx] && item.status === 'unpaid') {
+                    selected.push(item);
+                    total += item.amount;
+                }
+            });
+
+            if (selected.length === 0) {
+                showToast('Pilih minimal satu cicilan yang belum lunas.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('sppBayarBtn');
+            const orig = btn.innerHTML;
+            btn.innerHTML =
+                '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Memproses...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+
+                const descList = selected.map(s => s.desc).join(', ');
+
+                const tx = {
+                    type: 'spp',
+                    nim: selectedNim,
+                    items: selected.map(s => s.desc),
+                    amount: total,
+                    method: 'Virtual Account',
+                    methodLabel: 'Virtual Account',
+                    vaNumber: '8840' + String(Math.floor(100000000000 + Math.random() * 900000000000)).slice(0, 12),
+                    status: 'success',
+                    date: new Date().toLocaleString('id-ID'),
+                    detail: `
+                <div class="bg-surface-container-low rounded-xl p-4 space-y-2">
+                  <p class="text-[10px] text-on-surface-variant font-medium">Cicilan dibayar</p>
+                  <p class="text-xs font-medium">${descList}</p>
+                  <div class="border-t border-outline-variant/30 pt-2 flex justify-between">
+                    <span class="font-bold">Total</span>
+                    <span class="font-extrabold text-primary">Rp ${formatRupiah(total)}</span>
+                  </div>
+                  <div class="bg-primary/5 rounded-lg p-2 text-center">
+                    <p class="text-[10px] text-on-surface-variant">Virtual Account</p>
+                    <p class="text-sm font-mono font-bold text-primary tracking-wider">${tx.vaNumber}</p>
+                  </div>
+                </div>
+              `
+                };
+                addTransaction(tx);
+
+                // Update status data (simulate paid)
+                sppData.forEach((item, idx) => {
+                    if (sppChecked[idx] && item.status === 'unpaid') {
+                        item.status = 'paid';
+                    }
+                });
+                renderSppResult(sppData, selectedNim);
+
+                showReceiptModal(tx, tx.detail, null, 'spp');
+                showToast('✅ Pembayaran SPP berhasil!', 'success');
+            }, 1600);
+        }
+
+        // ============================================================
+        //  PULSA & PAKET
+        // ============================================================
+        // Provider selection
+        document.querySelectorAll('.provider-card').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.provider-card').forEach(c => c.classList.remove('selected'));
+                el.classList.add('selected');
+                selectedProvider = el.dataset.provider;
+                detectProviderFromHp();
+            });
+        });
+
+        // Nominal selection
+        document.querySelectorAll('.nominal-pill[data-nominal]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.nominal-pill[data-nominal]').forEach(c => c.classList.remove(
+                'selected'));
+                el.classList.add('selected');
+                selectedNominal = el.dataset.nominal;
+                document.getElementById('customNominalWrap').classList.add('hidden');
+                // deselect paket
+                document.querySelectorAll('.nominal-pill[data-paket]').forEach(c => c.classList.remove('selected'));
+                selectedPaket = null;
+            });
+        });
+
+        document.querySelectorAll('.nominal-pill[data-paket]').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.nominal-pill[data-paket]').forEach(c => c.classList.remove(
+                'selected'));
+                el.classList.add('selected');
+                selectedPaket = el.dataset.paket;
+                // deselect nominal
+                document.querySelectorAll('.nominal-pill[data-nominal]').forEach(c => c.classList.remove(
+                'selected'));
+                selectedNominal = null;
+                document.getElementById('customNominalWrap').classList.add('hidden');
+            });
+        });
+
+        // Custom nominal
+        document.querySelector('.nominal-pill[data-nominal="custom"]').addEventListener('click', function() {
+            document.querySelectorAll('.nominal-pill[data-nominal]').forEach(c => c.classList.remove('selected'));
+            this.classList.add('selected');
+            document.getElementById('customNominalWrap').classList.remove('hidden');
+            document.getElementById('customNominalInput').focus();
+            selectedNominal = 'custom';
+            document.querySelectorAll('.nominal-pill[data-paket]').forEach(c => c.classList.remove('selected'));
+            selectedPaket = null;
+        });
+
+        // HP input
+        document.getElementById('hpInput').addEventListener('input', detectProviderFromHp);
+
+        function detectProviderFromHp() {
+            const hp = document.getElementById('hpInput').value.trim();
+            const detectEl = document.getElementById('hpProviderDetect');
+            const nameEl = document.getElementById('hpProviderName');
+            const errorEl = document.getElementById('hpError');
+
+            if (hp.length < 3) {
+                detectEl.classList.add('hidden');
+                errorEl.classList.add('hidden');
+                return;
+            }
+
+            const prefix = hp.slice(0, 3);
+            const provider = PROVIDER_MAP[prefix];
+            if (provider) {
+                nameEl.textContent = provider;
+                detectEl.classList.remove('hidden');
+                errorEl.classList.add('hidden');
+                // auto select provider if matches
+                document.querySelectorAll('.provider-card').forEach(c => {
+                    const p = c.dataset.provider;
+                    const match = p === 'telkomsel' && provider === 'Telkomsel' ||
+                        p === 'xl' && provider === 'XL Axiata' ||
+                        p === 'indosat' && provider === 'Indosat Ooredoo' ||
+                        p === 'tri' && provider === 'Tri (3)' ||
+                        p === 'smartfren' && provider === 'Smartfren' ||
+                        p === 'axis' && provider === 'Axis';
+                    if (match) {
+                        document.querySelectorAll('.provider-card').forEach(c2 => c2.classList.remove('selected'));
+                        c.classList.add('selected');
+                        selectedProvider = p;
+                    }
+                });
+            } else {
+                detectEl.classList.add('hidden');
+            }
+        }
+
+        // ============================================================
+        //  PULSA - BAYAR
+        // ============================================================
+        document.getElementById('pulsaBayarBtn').addEventListener('click', prosesBayarPulsa);
+
+        function prosesBayarPulsa() {
+            const hp = document.getElementById('hpInput').value.trim();
+            const errorEl = document.getElementById('hpError');
+
+            // validasi HP
+            if (!/^08\d{8,11}$/.test(hp)) {
+                errorEl.classList.remove('hidden');
+                return;
+            }
+            errorEl.classList.add('hidden');
+
+            // nominal
+            let nominal = 0;
+            let nominalLabel = '';
+            if (selectedPaket) {
+                const paketMap = { '1gb': 15000, '3gb': 35000, '5gb': 55000, '10gb': 95000 };
+                nominal = paketMap[selectedPaket] || 0;
+                nominalLabel = 'Paket ' + selectedPaket.toUpperCase();
+            } else if (selectedNominal === 'custom') {
+                const val = parseInt(document.getElementById('customNominalInput').value);
+                if (!val || val < 1000) {
+                    showToast('Masukkan nominal yang valid (min Rp1.000)', 'warning');
+                    return;
+                }
+                nominal = val;
+                nominalLabel = 'Custom Rp' + formatRupiah(val);
+            } else if (selectedNominal) {
+                nominal = parseInt(selectedNominal);
+                nominalLabel = 'Pulsa Rp' + formatRupiah(nominal);
+            } else {
+                showToast('Pilih nominal pulsa atau paket data.', 'warning');
+                return;
+            }
+
+            const providerName = document.querySelector('.provider-card.selected')?.querySelector('p')?.textContent ||
+                'Provider';
+
+            const btn = document.getElementById('pulsaBayarBtn');
+            const orig = btn.innerHTML;
+            btn.innerHTML =
+                '<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Memproses...';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = orig;
+                btn.disabled = false;
+
+                const vaNumber = '8840' + String(Math.floor(100000000000 + Math.random() * 900000000000)).slice(0, 12);
+                const tx = {
+                    type: 'pulsa',
+                    phone: hp,
+                    provider: providerName,
+                    nominal: nominal,
+                    nominalLabel: nominalLabel,
+                    amount: nominal,
+                    method: 'Virtual Account',
+                    methodLabel: 'Virtual Account',
+                    vaNumber: vaNumber,
+                    status: 'success',
+                    date: new Date().toLocaleString('id-ID'),
+                    detail: `
+                <div class="bg-surface-container-low rounded-xl p-4 space-y-3">
+                  <div class="flex justify-between text-sm">
+                    <span class="text-on-surface-variant">Nomor Tujuan</span>
+                    <span class="font-bold">${hp}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-on-surface-variant">Provider</span>
+                    <span class="font-bold">${providerName}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-on-surface-variant">Nominal</span>
+                    <span class="font-bold">${nominalLabel}</span>
+                  </div>
+                  <div class="border-t border-outline-variant/30 pt-2 flex justify-between text-base font-extrabold">
+                    <span>Total</span>
+                    <span class="text-primary">Rp ${formatRupiah(nominal)}</span>
+                  </div>
+                  <div class="bg-primary/5 rounded-lg p-2 text-center">
+                    <p class="text-[10px] text-on-surface-variant">Virtual Account</p>
+                    <p class="text-sm font-mono font-bold text-primary tracking-wider">${vaNumber}</p>
+                  </div>
+                </div>
+              `
+                };
+                addTransaction(tx);
+
+                showReceiptModal(tx, tx.detail, null, 'pulsa');
+                showToast('✅ Pembelian pulsa berhasil!', 'success');
+
+                // Reset
+                document.getElementById('hpInput').value = '';
+                document.getElementById('customNominalInput').value = '';
+                document.getElementById('customNominalWrap').classList.add('hidden');
+                document.getElementById('hpProviderDetect').classList.add('hidden');
+                document.querySelectorAll('.nominal-pill[data-nominal]').forEach(c => c.classList.remove('selected'));
+                document.querySelectorAll('.nominal-pill[data-paket]').forEach(c => c.classList.remove('selected'));
+                document.querySelector('.nominal-pill[data-nominal="10000"]')?.classList.add('selected');
+                selectedNominal = '10000';
+                selectedPaket = null;
+            }, 1500);
+        }
+
+        // ============================================================
+        //  RECEIPT MODAL
+        // ============================================================
+        function showReceiptModal(tx, paymentDetail, qrData, type) {
+            const typeLabels = {
+                bill: 'Tagihan',
+                spp: 'SPP',
+                pulsa: 'Pulsa'
+            };
+
+            const html = `
+            <div id="receipt-print-area" class="space-y-4">
+              <div class="text-center">
+                <div class="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span class="material-symbols-outlined text-white text-3xl">check_circle</span>
+                </div>
+                <h3 class="text-xl font-extrabold text-on-surface">Pembayaran Berhasil!</h3>
+                <p class="text-sm text-on-surface-variant">${typeLabels[type] || 'Transaksi'} selesai diproses</p>
+              </div>
+
+              <div class="bg-surface-container-low rounded-xl p-4 space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-on-surface-variant">ID Transaksi</span>
+                  <span class="font-mono font-bold text-xs">${tx.id}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-on-surface-variant">Tanggal</span>
+                  <span class="font-bold">${tx.date}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-on-surface-variant">Metode</span>
+                  <span class="font-bold">${tx.methodLabel || 'Virtual Account'}</span>
+                </div>
+                <div class="flex justify-between border-t border-outline-variant/30 pt-2 mt-1">
+                  <span class="font-bold">Total Dibayar</span>
+                  <span class="font-extrabold text-primary text-lg">Rp ${formatRupiah(tx.amount)}</span>
+                </div>
+              </div>
+
+              ${paymentDetail}
+
+              ${qrData ? `<div id="qrcode-modal-container" class="flex justify-center mt-2"></div>` : ''}
+
+              <div class="flex gap-3 no-print">
+                <button onclick="window.print()" class="flex-1 py-3 bg-primary text-on-primary rounded-xl font-bold text-sm shadow-sm active:scale-[0.97] transition flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-lg">print</span> Cetak
+                </button>
+                <button onclick="closeModal()" class="flex-1 py-3 border border-outline-variant text-on-surface-variant rounded-xl font-bold text-sm active:scale-[0.97] transition">
+                  Tutup
+                </button>
+              </div>
+            </div>
+          `;
+
+            openModal(html);
+
+            // Render QR jika ada
+            if (qrData) {
+                setTimeout(() => {
+                    const container = document.getElementById('qrcode-modal-container');
+                    if (container && typeof QRCode !== 'undefined') {
+                        container.innerHTML = '';
+                        new QRCode(container, {
+                            text: qrData,
+                            width: 160,
+                            height: 160,
+                            colorDark: '#00685f',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }, 100);
+            }
+
+            // juga di modal awal untuk qris
+            if (qrData && document.getElementById('qrcode-container')) {
+                setTimeout(() => {
+                    const container = document.getElementById('qrcode-container');
+                    if (container && typeof QRCode !== 'undefined') {
+                        container.innerHTML = '';
+                        new QRCode(container, {
+                            text: qrData,
+                            width: 160,
+                            height: 160,
+                            colorDark: '#00685f',
+                            colorLight: '#ffffff',
+                            correctLevel: QRCode.CorrectLevel.H
+                        });
+                    }
+                }, 100);
+            }
+        }
+
+        // ============================================================
+        //  HISTORY
+        // ============================================================
+        function renderHistory() {
+            const txs = getTransactions();
+            const list = document.getElementById('historyList');
+            const empty = document.getElementById('historyEmpty');
+            let filtered = txs;
+
+            if (currentFilter !== 'all') {
+                filtered = txs.filter(tx => tx.type === currentFilter || tx.category === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                list.innerHTML = '';
+                empty.style.display = 'block';
+                document.getElementById('statTotal').textContent = '0';
+                document.getElementById('statTotalAmount').textContent = 'Rp 0';
+                return;
+            }
+            empty.style.display = 'none';
+
+            list.innerHTML = filtered.map(tx => `
+            <div class="p-4 flex items-center justify-between hover:bg-surface-container-low/50 transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center ${tx.type === 'pulsa' ? 'bg-purple-50 text-purple-600' : tx.type === 'spp' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'} flex-shrink-0">
+                  <span class="material-symbols-outlined text-xl">${tx.type === 'pulsa' ? 'sim_card' : tx.type === 'spp' ? 'school' : 'receipt_long'}</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-sm text-on-surface truncate">${tx.type === 'pulsa' ? 'Pulsa ' + (tx.provider || '') : tx.type === 'spp' ? 'SPP - ' + (tx.nim || '') : (tx.name || tx.category || 'Tagihan')}</p>
+                  <p class="text-[10px] text-on-surface-variant truncate">${tx.date || '-'}</p>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-2">
+                <p class="font-bold text-sm ${tx.type === 'pulsa' ? 'text-primary' : 'text-on-surface'}">-Rp ${formatRupiah(tx.amount)}</p>
+                <span class="text-[8px] font-bold text-emerald-600 uppercase tracking-tighter">Sukses</span>
+              </div>
+            </div>
+          `).join('');
+
+            // Stats
+            const total = txs.length;
+            const totalAmount = txs.reduce((sum, tx) => sum + (tx.amount || 0), 0);
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statTotalAmount').textContent = 'Rp ' + formatRupiah(totalAmount);
+        }
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(el => {
+            el.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.toggle('bg-primary', b === el);
+                    b.classList.toggle('text-on-primary', b === el);
+                    b.classList.toggle('bg-surface-container', b !== el);
+                    b.classList.toggle('text-on-surface-variant', b !== el);
+                });
+                currentFilter = el.dataset.filter;
+                renderHistory();
+            });
+        });
+
+        // Clear history
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => {
+            if (confirm('Hapus semua riwayat transaksi?')) {
+                clearTransactions();
+                renderHistory();
+                renderMiniHistory();
+                showToast('🗑️ Riwayat berhasil dihapus.', 'info');
+            }
+        });
+
+        // ============================================================
+        //  MINI HISTORY (Dashboard)
+        // ============================================================
+        function renderMiniHistory() {
+            const txs = getTransactions().slice(0, 3);
+            const container = document.getElementById('mini-history');
+            if (txs.length === 0) {
+                container.innerHTML = `
+              <div class="p-4 text-center text-on-surface-variant text-sm bg-surface-container-low rounded-2xl">
+                <span class="material-symbols-outlined text-2xl block mx-auto mb-1">history</span>
+                Belum ada transaksi.
+              </div>
+            `;
+                return;
+            }
+            container.innerHTML = txs.map(tx => `
+            <div class="flex items-center justify-between p-3 bg-surface-container-low rounded-2xl">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-8 h-8 rounded-full flex items-center justify-center ${tx.type === 'pulsa' ? 'bg-purple-50 text-purple-600' : tx.type === 'spp' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'} flex-shrink-0">
+                  <span class="material-symbols-outlined text-lg">${tx.type === 'pulsa' ? 'sim_card' : tx.type === 'spp' ? 'school' : 'receipt_long'}</span>
+                </div>
+                <div class="min-w-0">
+                  <p class="font-bold text-sm text-on-surface truncate">${tx.type === 'pulsa' ? 'Pulsa' : tx.type === 'spp' ? 'SPP' : (tx.name || tx.category || 'Tagihan')}</p>
+                  <p class="text-[10px] text-on-surface-variant truncate">${tx.date || '-'}</p>
+                </div>
+              </div>
+              <div class="text-right flex-shrink-0 ml-2">
+                <p class="font-bold text-sm text-on-surface">-Rp ${formatRupiah(tx.amount)}</p>
+              </div>
+            </div>
+          `).join('');
+        }
+
+        // ============================================================
+        //  UTILITY
+        // ============================================================
+        function formatRupiah(num) {
+            if (num === undefined || num === null) return '0';
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        // ============================================================
+        //  INIT
+        // ============================================================
+        function init() {
+            renderMiniHistory();
+            // Set default category active
+            document.querySelector('.cat-btn[data-cat="pln"]')?.classList.add('bg-primary-container', 'text-on-primary-container');
+            document.querySelector('.cat-btn[data-cat="pln"]')?.classList.remove('bg-surface-container',
+                'text-on-surface-variant');
+
+            // Set default nominal selected
+            document.querySelector('.nominal-pill[data-nominal="10000"]')?.classList.add('selected');
+
+            // Nav center default text
+            document.querySelector('.nav-center .nav-label').textContent = 'Pulsa';
+
+            // Jika ada transaksi di history, update
+            if (getTransactions().length > 0) {
+                renderHistory();
+            }
+
+            console.log('🚀 BayarKita siap digunakan!');
+        }
+
+        // Jalankan
+        init();
+
+        // ============================================================
+        //  NOTIFIKASI (dummy)
+        // ============================================================
+        document.getElementById('notifBtn').addEventListener('click', () => {
+            showToast('📬 Tidak ada notifikasi baru.', 'info');
+        });
+
+        // ============================================================
+        //  SERVICE: tombol dari dashboard ke bayar dengan kategori
+        // ============================================================
+        document.querySelectorAll('.service-btn').forEach(el => {
+            el.addEventListener('click', () => {
+                const svc = el.dataset.service;
+                navigateTo('bayar');
+                document.querySelectorAll('.cat-btn').forEach(b => {
+                    b.classList.toggle('bg-primary-container', b.dataset.cat === svc);
+                    b.classList.toggle('text-on-primary-container', b.dataset.cat === svc);
+                    b.classList.toggle('bg-surface-container', b.dataset.cat !== svc);
+                    b.classList.toggle('text-on-surface-variant', b.dataset.cat !== svc);
+                });
+                currentBillCategory = svc;
+                document.getElementById('billNumber').value = '';
+                document.getElementById('billResult').classList.add('hidden');
+                document.getElementById('billError').classList.add('hidden');
+            });
+        });
+
+        // ============================================================
+        //  KEYBOARD: ESC to close modal
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
+
+        console.log('✅ BayarKita v1.0 — Mobile Bill Payment App');
+        console.log('📌 Data tersimpan di localStorage: bayarkita_transactions');
+    </script>
+
+</body>
+</html>
