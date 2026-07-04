@@ -106,6 +106,9 @@
 
 ---
 
+## Link Demo
+https://alfaqih12.github.io/Bayar_Kita/
+
 ## Struktur Data Dummy
 
 Data tagihan dan SPP disimpan dalam objek `BILL_DATA` di JavaScript. Contoh:
